@@ -1,0 +1,100 @@
+---
+description: 
+globs: *.py, *.ipynb, *.jupyter
+alwaysApply: false
+---
+# Use Plotly Express for Simple Plots
+
+Always use `plotly.express` instead of `matplotlib` or `seaborn` for simple plotting operations.
+
+## When to Use Plotly Express
+
+Use plotly express for:
+- Line charts
+- Scatter plots  
+- Bar charts
+- Histograms
+- Heatmaps
+- Box plots
+- Violin plots
+- Basic statistical visualizations
+
+## Command Mappings
+
+| Instead of | Use |
+|------------|-----|
+| `plt.plot(x, y)` | `px.line(df, x='x_col', y='y_col')` |
+| `plt.scatter(x, y)` | `px.scatter(df, x='x_col', y='y_col')` |
+| `plt.bar(categories, values)` | `px.bar(df, x='categories', y='values')` |
+| `plt.hist(data)` | `px.histogram(df, x='data_col')` |
+| `sns.heatmap(corr_matrix)` | `px.imshow(corr_matrix)` |
+| `plt.boxplot(data)` | `px.box(df, y='data_col')` |
+| `sns.violinplot(data)` | `px.violin(df, y='data_col')` |
+
+## Required Import
+
+Always include: `import plotly.express as px`
+
+## Examples
+
+<example>
+**User request**: "Create a scatter plot of price vs size"
+**Response**: 
+```python
+import plotly.express as px
+fig = px.scatter(df, x='size', y='price', title='Price vs Size')
+fig.show()
+```
+</example>
+
+<example>
+**User request**: "Make a line chart showing sales over time"
+**Response**:
+```python
+import plotly.express as px
+fig = px.line(df, x='date', y='sales', title='Sales Over Time')
+fig.show()
+```
+</example>
+
+<example type="invalid">
+**Don't do**: 
+```python
+import matplotlib.pyplot as plt
+plt.scatter(df['size'], df['price'])
+plt.show()
+```
+**Do instead**:
+```python
+import plotly.express as px
+fig = px.scatter(df, x='size', y='price')
+fig.show()
+```
+</example>
+
+<example>
+**User request**: "Create a correlation heatmap"
+**Response**:
+```python
+import plotly.express as px
+correlation_matrix = df.corr()
+fig = px.imshow(correlation_matrix, 
+                text_auto=True, 
+                title='Correlation Heatmap')
+fig.show()
+```
+</example>
+
+## Benefits
+
+- **Interactive**: Built-in zoom, pan, hover tooltips
+- **Modern**: Clean, professional appearance
+- **Web-ready**: Easy to embed in web applications
+- **Consistent API**: Similar function signatures across plot types
+- **Better defaults**: Good styling out of the box
+
+## When to Use Alternatives
+
+- **Complex custom layouts**: Use matplotlib for fine-grained control
+- **3D plots**: Consider plotly.graph_objects for advanced 3D
+- **Performance**: Use matplotlib for very large datasets (>100k points)

@@ -1,0 +1,63 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+# Use uv as Default Package Manager
+
+Always use `uv` instead of `pip` for Python package management operations unless explicitly stated otherwise.
+
+## Core Requirements
+
+- **Default to uv**: Use `uv` commands for all package management tasks
+- **Explicit override only**: Only use `pip` when specifically requested by the user
+- **Consistent workflow**: Apply uv usage across all Python projects and environments
+
+## Command Mappings
+
+| Instead of | Use |
+|------------|-----|
+| `pip install <package>` | `uv add <package>` |
+| `pip uninstall <package>` | `uv remove <package>` |
+| `pip install -r requirements.txt` | `uv sync` |
+| `pip freeze` | `uv pip freeze` |
+| `pip list` | `uv pip list` |
+| `pip install -e .` | `uv add -e .` |
+| `python -m pip install` | `uv add` |
+
+## Environment Management
+
+- Create virtual environments with `uv venv`
+- Run scripts in project environment with `uv run <command>`
+- Generate lock files with `uv lock`
+- Sync dependencies with `uv sync`
+
+## Examples
+
+<example>
+**User request**: "Install requests library"
+**Response**: Use `uv add requests` to install the requests library.
+</example>
+
+<example>
+**User request**: "Install development dependencies from requirements-dev.txt"
+**Response**: Use `uv sync --extra dev` or `uv add -r requirements-dev.txt` depending on your project setup.
+</example>
+
+<example type="invalid">
+**Don't do**: Automatically suggesting `pip install requests` when the user asks to install a package.
+**Do instead**: Always suggest `uv add requests` unless the user specifically asks for pip.
+</example>
+
+<example>
+**User request**: "Use pip to install numpy for compatibility testing"
+**Response**: Since you specifically requested pip: `pip install numpy`
+*This is the only case where pip should be used - when explicitly requested.*
+</example>
+
+## Benefits
+
+- **Faster**: uv is significantly faster than pip
+- **Better dependency resolution**: More reliable package management
+- **Modern tooling**: Built for contemporary Python development
+- **Lock file generation**: Automatic dependency locking for reproducible builds

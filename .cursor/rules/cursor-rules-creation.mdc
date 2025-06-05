@@ -1,0 +1,110 @@
+---
+description: Guidelines for creating and placing new user-requested cursor rules
+globs: 
+alwaysApply: false
+---
+# Cursor Rules Guidelines
+
+Guidelines for creating new user-requested cursor rules.
+
+## MDC Frontmatter Rule Types
+
+All rule files must start with MDC frontmatter to specify rule behavior:
+
+```mdc
+---
+description: (string - when rule should be applied)
+globs: (comma-separated file patterns)
+alwaysApply: (boolean)
+---
+```
+
+### Rule Type Configuration
+
+| Rule Type | `description` | `globs` | `alwaysApply` | Behavior |
+|-----------|---------------|---------|---------------|----------|
+| **Always** | blank | blank | `true` | Auto-attached to every chat/Cmd-K |
+| **Auto-Attached** | blank | defined | `false` | Attached when files match glob patterns |
+| **Agent-Requested** | defined | blank | `false` | AI agent fetches when relevant |
+| **Manual** | blank | blank | `false` | Only when explicitly mentioned with `@` |
+
+### Examples
+
+**Agent-Requested Rule:**
+```mdc
+---
+description: Use uv instead of pip for Python package management
+globs: 
+alwaysApply: false
+---
+```
+
+**Auto-Attached Rule:**
+```mdc
+---
+description: 
+globs: *.py, *.toml
+alwaysApply: false
+---
+```
+
+**Always Rule:**
+```mdc
+---
+description: 
+globs: 
+alwaysApply: true
+---
+```
+
+## File Placement Guidelines
+
+When creating Cursor rules:
+
+1. **Always place rule files in PROJECT_ROOT/.cursor/rules/:**
+   ```
+   .cursor/rules/
+   ├── your-rule-name.mdc
+   ├── another-rule.mdc
+   └── ...
+   ```
+
+2. **Follow the naming convention:**
+   - Use kebab-case for filenames
+   - Always use .mdc extension
+   - Make names descriptive of the rule's purpose
+
+3. **Include proper MDC frontmatter:**
+   - Specify description for agent-requested rules
+   - Define globs for auto-attached rules
+   - Set alwaysApply: true for global rules
+   - Leave fields blank for manual rules
+
+4. **Directory structure:**
+   ```
+   PROJECT_ROOT/
+   ├── .cursor/
+   │   └── rules/
+   │       ├── your-rule-name.mdc
+   │       └── ...
+   └── ...
+   ```
+
+5. **Never place rule files:**
+   - In the project root
+   - In subdirectories outside .cursor/rules
+   - In any other location
+
+6. **Frontmatter formatting:**
+   - Don't quote glob patterns
+   - Use comma separation for multiple globs
+   - Keep descriptions concise but specific
+
+## Common Mistakes to Avoid
+
+- ❌ Quoting glob patterns: `globs: "*.py"`
+- ✅ Unquoted patterns: `globs: *.py`
+- ❌ Wrong location: `rules/my-rule.mdc`
+- ✅ Correct location: `.cursor/rules/my-rule.mdc`
+- ❌ Missing frontmatter entirely
+- ✅ Complete frontmatter with all three fields
