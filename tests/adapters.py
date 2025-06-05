@@ -1,5 +1,6 @@
 from __future__ import annotations
-
+from cs336_systems.kernels.flashattn_pytorch import FlashAttentionPyTorch
+from cs336_systems.kernels.flashattn_triton import FlashAttentionTriton
 from typing import Type
 
 import torch
@@ -16,7 +17,7 @@ def get_flashattention_autograd_function_pytorch() -> Type:
         A class object (not an instance of the class)
     """
     # For example: return MyRMSNormAutogradFunctionClass
-    raise NotImplementedError
+    return FlashAttentionPyTorch
 
 
 def get_flashattention_autograd_function_triton() -> Type:
@@ -32,7 +33,7 @@ def get_flashattention_autograd_function_triton() -> Type:
         A class object (not an instance of the class)
     """
     # For example: return MyTritonRMSNormAutogradFunctionClass
-    raise NotImplementedError
+    return FlashAttentionTriton
 
 
 def get_ddp_individual_parameters(module: torch.nn.Module) -> torch.nn.Module:

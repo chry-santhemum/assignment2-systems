@@ -2,6 +2,7 @@ import triton
 import triton.language as tl
 import torch
 from einops import rearrange
+import math
 
 @triton.jit
 def weighted_sum_fwd(
@@ -101,6 +102,7 @@ def weighted_sum_bwd(
         block_shape=(ROWS_TILE_SIZE,),
         order=(0,),
     )
+
     w_block_ptr = tl.make_block_ptr(
         w_ptr,
         shape=(D,),
@@ -109,6 +111,7 @@ def weighted_sum_bwd(
         block_shape=(D_TILE_SIZE,),
         order=(0,),
     )
+
     x_block_ptr = tl.make_block_ptr(
         x_ptr,
         shape=(ROWS, D),
@@ -117,6 +120,7 @@ def weighted_sum_bwd(
         block_shape=(ROWS_TILE_SIZE, D_TILE_SIZE),
         order=(0, 1),
     )
+
     temp_w_grad_block_ptr = tl.make_block_ptr(
         temp_w_grad_ptr,
         shape=(D, n_row_tiles),
@@ -125,6 +129,7 @@ def weighted_sum_bwd(
         block_shape=(D_TILE_SIZE, 1),
         order=(0, 1),
     )
+
     x_grad_block_ptr = tl.make_block_ptr(
         x_grad_ptr,
         shape=(ROWS, D),
@@ -138,7 +143,7 @@ def weighted_sum_bwd(
         y_grad_block = tl.load(y_grad_block_ptr, boundary_check=(0,), padding_option="zero")
         w_block = tl.load(w_block_ptr, boundary_check=(0,), padding_option="zero")
         x_block = tl.load(x_block_ptr, boundary_check=(0, 1), padding_option="zero")
-        
+    
         # compute gradients
         x_grad_block = y_grad_block[:, None] * w_block[None]
         w_grad_block = tl.sum(x_block * y_grad_block[:, None], axis=0, keep_dims=True)
@@ -150,7 +155,7 @@ def weighted_sum_bwd(
         # move pointers
         w_block_ptr = w_block_ptr.advance((D_TILE_SIZE,))
         x_block_ptr = x_block_ptr.advance((0, D_TILE_SIZE))
-        temp_w_grad_block_ptr = temp_w_grad_block_ptr.advance((D_TILE_SIZE,))
+        temp_w_grad_block_ptr = temp_w_grad_block_ptr.advance((D_TILE_SIZE, 0))
         x_grad_block_ptr = x_grad_block_ptr.advance((0, D_TILE_SIZE))
 
 
@@ -257,7 +262,7 @@ class WeightedSumFunc(torch.autograd.Function):
         
         # Launch our kernel with n instances in our 1D grid.
         n_rows = y.numel()
-        weighted_sum_fwd[(tl.cdiv(n_rows, ctx.ROWS_TILE_SIZE),)](
+        weighted_sum_fwd[(math.ceil(n_rows / ctx.ROWS_TILE_SIZE),)](
             x, weight,
             y,
             x.stride(0), x.stride(1),
@@ -274,7 +279,11 @@ class WeightedSumFunc(torch.autograd.Function):
         x, weight = ctx.saved_tensors
         D = x.shape[-1]
         n_rows = x.shape[0]
-        n_row_tiles = tl.cdiv(n_rows, ctx.ROWS_TILE_SIZE)
+        n_row_tiles = math.ceil(n_rows / ctx.ROWS_TILE_SIZE)
+        print("ROWS", n_rows)
+        print("ROWS_TILE_SIZE", ctx.ROWS_TILE_SIZE)
+        print("D", D)
+        print("D_TILE_SIZE", ctx.D_TILE_SIZE)
         
         # Reshape gradient to match input shape
         y_grad = y_grad.reshape(-1)
@@ -284,7 +293,7 @@ class WeightedSumFunc(torch.autograd.Function):
         grad_weight_temp = torch.empty((D, n_row_tiles), device=x.device)
         
         # Launch backward kernel
-        weighted_sum_bwd[(tl.cdiv(n_rows, ctx.ROWS_TILE_SIZE),)](
+        weighted_sum_bwd[(n_row_tiles,)](
             x, weight, y_grad,
             grad_x, grad_weight_temp,
             x.stride(0), x.stride(1),

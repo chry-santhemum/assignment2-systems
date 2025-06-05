@@ -19,8 +19,8 @@ def test_benchmark_basic():
     )
     batch_size = 8
     seq_len = 128
-    num_warmup = 3
-    num_samples = 5
+    num_warmup = 5
+    num_samples = 100
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"\nRunning benchmark on {device}")
 
@@ -44,8 +44,8 @@ def test_benchmark_attn():
     # args setting
     d_head = 8
     seq_len = 128
-    num_warmup = 3
-    num_samples = 20
+    num_warmup = 5
+    num_samples = 100
     device = "cuda" if torch.cuda.is_available() else "cpu"
     print(f"\nRunning benchmark on {device}")
 

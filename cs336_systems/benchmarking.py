@@ -106,6 +106,14 @@ def benchmark_attn(
     Q.requires_grad = True
     K.requires_grad = True
     V.requires_grad = True
+
+    for _ in range(num_warmup):
+        loss = sdpa(Q, K, V).sum()
+        loss.backward()
+    
+    if device == "cuda":
+        torch.cuda.synchronize()
+
     for _ in range(num_samples):
         loss = sdpa(Q, K, V).sum()
         start = timer()
